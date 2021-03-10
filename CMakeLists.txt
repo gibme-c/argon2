@@ -42,7 +42,7 @@ include(CheckCSourceCompiles)
 find_package(Threads REQUIRED)
 
 if(MSVC)
-    add_definitions("/EHsc -std:c++17 /DWIN32_LEAN_AND_MEAN /O2 /wd4267")
+    add_definitions("/EHsc -std:c++17 /DWIN32_LEAN_AND_MEAN /O2 /wd4267 /D_CRT_SECURE_NO_WARNINGS")
 endif()
 
 if(NOT MSVC)
