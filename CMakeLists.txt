@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 
 if(DEFINED CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "Choose the type of build, options are: Debug, Release, RelWithDebInfo")
@@ -15,17 +15,10 @@ message(STATUS "Building for target architecture: ${ARCH}")
 
 set(LIB_MAJOR_VERSION "1")
 set(LIB_MINOR_VERSION "0")
-set(LIB_PATCH_VERSION "1")
+set(LIB_PATCH_VERSION "2")
 set(LIB_VERSION_STRING "${LIB_MAJOR_VERSION}.${LIB_MINOR_VERSION}.${LIB_PATCH_VERSION}")
 
-if(CMAKE_VERSION VERSION_LESS 3.0)
-    project(argon2 C)
-    enable_language(C)
-    enable_language(CXX)
-else()
-    cmake_policy(SET CMP0048 NEW)
-    project(argon2 VERSION "${LIB_VERSION_STRING}" LANGUAGES C CXX)
-endif()
+project(argon2 VERSION "${LIB_VERSION_STRING}" LANGUAGES C CXX)
 
 if(NOT MSVC)
     find_program(CCACHE_PROGRAM ccache)
