@@ -5,9 +5,8 @@
  *
  * This work is licensed under a Creative Commons CC0 1.0 License/Waiver.
  *
- * You should have received a copy of the CC0 Public Domain Dedication along
- * with
- * this software. If not, see
+ * You should have received a copy of the CC0 Public Domain Dedication
+ * along with this software. If not, see
  * <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
@@ -96,7 +95,9 @@ int allocate_memory(const argon2_context *context,
 
     /* 2. Try to allocate with appropriate allocator */
     if (context->allocate_cbk) {
-        (context->allocate_cbk)((uint8_t **)&instance->memory, memory_size);
+        uint8_t *mem = NULL;
+        (context->allocate_cbk)(&mem, memory_size);
+        instance->memory = (block *)(void *)mem;
     } else {
         instance->memory = malloc(memory_size);
     }
