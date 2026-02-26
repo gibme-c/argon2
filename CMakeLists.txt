@@ -6,10 +6,6 @@ endif()
 
 message(STATUS "Mode: ${CMAKE_BUILD_TYPE}")
 
-set(ARCH native CACHE STRING "CPU to build for: -march value or native")
-
-message(STATUS "Building for target architecture: ${ARCH}")
-
 project(argon2 VERSION "1.0.2" LANGUAGES C)
 
 include(CheckCCompilerFlag)
@@ -35,7 +31,7 @@ message(STATUS "Processor: ${CMAKE_SYSTEM_PROCESSOR}")
 # OptimizeForArchitecture only handles x86/AMD64 SIMD flags (SSE/AVX).
 # On ARM/AArch64 it has no useful detection and probes invalid ARM32 flags
 # (-mfloat-abi, -mfpu) that don't apply to AArch64, so skip it entirely.
-if(NOT "${ARCH}" STREQUAL "default" AND CMAKE_SYSTEM_PROCESSOR MATCHES "x86|AMD64")
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86|AMD64")
     include(OptimizeForArchitecture)
     OptimizeForArchitecture()
 endif()
@@ -80,15 +76,13 @@ set_property(TARGET argon2 PROPERTY C_STANDARD 90)
 set_property(TARGET argon2 PROPERTY C_STANDARD_REQUIRED ON)
 
 # --- Architecture-specific compile flags (PRIVATE) ---
-if(NOT "${ARCH}" STREQUAL "default")
-    if(MSVC)
-        # Needed by MSVC, but not added by OptimizeForArchitecture()
-        target_compile_definitions(argon2 PRIVATE __SSE__)
-    endif()
-    foreach(flag ${Vc_ARCHITECTURE_FLAGS})
-        target_compile_options(argon2 PRIVATE ${flag})
-    endforeach()
+if(MSVC)
+    # Needed by MSVC, but not added by OptimizeForArchitecture()
+    target_compile_definitions(argon2 PRIVATE __SSE__)
 endif()
+foreach(flag ${Vc_ARCHITECTURE_FLAGS})
+    target_compile_options(argon2 PRIVATE ${flag})
+endforeach()
 
 # --- MinGW SIMD stack alignment fix ---
 # Windows x64 ABI only guarantees 16-byte stack alignment, but YMM/ZMM registers
