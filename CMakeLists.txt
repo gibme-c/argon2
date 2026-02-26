@@ -32,7 +32,10 @@ find_package(Threads REQUIRED)
 message(STATUS "Processor: ${CMAKE_SYSTEM_PROCESSOR}")
 
 # --- Architecture detection for SIMD ---
-if(NOT "${ARCH}" STREQUAL "default")
+# OptimizeForArchitecture only handles x86/AMD64 SIMD flags (SSE/AVX).
+# On ARM/AArch64 it has no useful detection and probes invalid ARM32 flags
+# (-mfloat-abi, -mfpu) that don't apply to AArch64, so skip it entirely.
+if(NOT "${ARCH}" STREQUAL "default" AND CMAKE_SYSTEM_PROCESSOR MATCHES "x86|AMD64")
     include(OptimizeForArchitecture)
     OptimizeForArchitecture()
 endif()
