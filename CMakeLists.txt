@@ -34,6 +34,12 @@ message(STATUS "Processor: ${CMAKE_SYSTEM_PROCESSOR}")
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86|AMD64")
     include(OptimizeForArchitecture)
     OptimizeForArchitecture()
+    # OFA_HandleX86Options uses add_definitions() on MSVC, which leaks to
+    # directory scope. Capture and move those definitions to the target.
+    if(MSVC)
+        get_directory_property(_ofa_defs COMPILE_DEFINITIONS)
+        set_directory_properties(PROPERTIES COMPILE_DEFINITIONS "")
+    endif()
 endif()
 
 # --- Source files ---
@@ -66,11 +72,23 @@ endif()
 add_library(argon2 STATIC ${ARGON2_SRC})
 
 target_include_directories(argon2
-    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
-    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/lib ${CMAKE_CURRENT_SOURCE_DIR}/lib/blake2
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/lib
+        ${CMAKE_CURRENT_SOURCE_DIR}/lib/blake2
+)
+target_include_directories(argon2
+    SYSTEM INTERFACE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
 )
 
 target_link_libraries(argon2 PRIVATE Threads::Threads)
+
+# Re-apply OFA's MSVC SIMD definitions at target scope (see capture above)
+if(MSVC AND _ofa_defs)
+    target_compile_definitions(argon2 PRIVATE ${_ofa_defs})
+endif()
 
 set_property(TARGET argon2 PROPERTY C_STANDARD 90)
 set_property(TARGET argon2 PROPERTY C_STANDARD_REQUIRED ON)
